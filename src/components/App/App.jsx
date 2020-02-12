@@ -1,113 +1,126 @@
 import React, { Component } from "react";
 import axios from "axios";
 require("purecss");
-
-const api = axios.create({
-  baseURL: "https://api.github.com/graphql",
-  headers: {
-    Authorization: `bearer ${process.env.GITHUB_TOKEN}`
-  }
-});
-
-const QUERY = `
-{
-  organization(login: "sveltejs") {
-    name
-    url
-    repository(name: "template") {
-      name
-      url
-      issues(first: 100, orderBy: {direction: DESC, field: CREATED_AT}, states: [OPEN, CLOSED]) {
-        nodes {
-          title
-          author {
-            login
-          }
-          bodyText
-          comments(first: 20) {
-            nodes {
-              author {
-                login
-              }
-              bodyText
-            }
-          }
-          state
-        }
-      }
-      pullRequests(first: 10, orderBy: {field: CREATED_AT, direction: DESC}, states: OPEN) {
-        nodes {
-          author {
-            login
-          }
-          createdAt
-          bodyText
-          number
-        }
-      }
-    }
-  }
-}
-`;
+import Menu from "../Menu/Menu";
+import Form from "../Form/Form";
+import DataContext from "../../DataContext";
 
 export default class App extends Component {
   constructor() {
     super();
 
     this.state = {
+      inputValue: {
+        token: process.env.GITHUB_TOKEN,
+        org: "sveltejs",
+        repo: "template"
+      },
       openIssues: [],
       closedIssues: [],
-      pullRequests: []
+      pullRequests: [],
+      handleChange: this.handleChange,
+      fetchData: this.fetchData
     };
   }
   componentDidMount() {
     this.fetchData();
   }
 
-  fetchData = () => {
-    api.post("", { query: QUERY }).then(res => {
-      this.setState({
-        openIssues: res.data.data.organization.repository.issues,
-        pullRequests: res.data.data.organization.repository.pullRequests
-      });
-      console.log(res.data.data);
+  fetchData = e => {
+    if (e !== undefined) {
+      e.preventDefault();
+    }
+
+    const { token, org, repo } = this.state.inputValue;
+
+    const api = axios.create({
+      baseURL: "https://api.github.com/graphql",
+      headers: {
+        Authorization: `bearer ${token}`
+      }
     });
+
+    const fetchRepoData = (org, repo) => `
+      {
+        organization(login: "${org}") {
+          name
+          url
+          repository(name: "${repo}") {
+            name
+            url
+            issues(first: 100, orderBy: {direction: DESC, field: CREATED_AT}, states: [OPEN, CLOSED]) {
+              nodes {
+                title
+                author {
+                  login
+                }
+                bodyText
+                comments(first: 20) {
+                  nodes {
+                    author {
+                      login
+                    }
+                    bodyText
+                  }
+                }
+                state
+              }
+            }
+            pullRequests(first: 10, orderBy: {field: CREATED_AT, direction: DESC}, states: OPEN) {
+              nodes {
+                author {
+                  login
+                }
+                createdAt
+                bodyText
+                number
+              }
+            }
+          }
+        }
+      }
+      `;
+
+    api.post("", { query: fetchRepoData(org, repo) }).then(res => {
+      this.sortIssues(res.data.data.organization.repository.issues.nodes);
+      this.setState({
+        pullRequests: res.data.data.organization.repository.pullRequests.nodes
+      });
+      console.log("REPO DATA:", res.data.data);
+    });
+  };
+
+  sortIssues = issues => {
+    const openIssues = [];
+    const closedIssues = [];
+
+    issues.forEach(issue => {
+      issue.state === "OPEN"
+        ? openIssues.push(issue)
+        : closedIssues.push(issue);
+    });
+
+    this.setState({ openIssues, closedIssues });
+  };
+
+  handleChange = e => {
+    const { inputValue } = { ...this.state };
+    const inputValueCopy = inputValue;
+    const { name, value } = e.target;
+    inputValueCopy[name] = value;
+
+    this.setState({ inputValue: inputValueCopy });
   };
 
   render() {
     return (
-      <div className="App">
-        GRAPHQL GITHUB TRACKER
-        <div className="pure-menu pure-menu-horizontal">
-          <ul className="pure-menu-list">
-            <li className="pure-menu-item">
-              <a href="" className="pure-menu-link">
-                OPEN ISSUES
-              </a>
-            </li>
-            <li className="pure-menu-item">
-              <a href="" className="pure-menu-link">
-                CLOSED ISSUES
-              </a>
-            </li>
-            <li className="pure-menu-item">
-              <a href="" className="pure-menu-link">
-                PULL REQUESTS
-              </a>
-            </li>
-          </ul>
+      <DataContext.Provider value={this.state}>
+        <div className="app-wrapper">
+          GRAPHQL GITHUB TRACKER
+          <Menu />
+          <Form />
         </div>
-        <form action="submit" className="pure-form search-form">
-          <fieldset>
-            <legend>Search for a repo using your token and a repo name.</legend>
-            <input type="text" placeholder="Token" />
-            <input type="text" placeholder="Repo path" />
-            <button className="pure-button pure-button-primary" onClick={this.fetchData}>
-              SUBMIT
-            </button>
-          </fieldset>
-        </form>
-      </div>
+      </DataContext.Provider>
     );
   }
 }
