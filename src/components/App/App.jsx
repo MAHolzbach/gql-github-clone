@@ -3,6 +3,7 @@ import axios from "axios";
 require("purecss");
 import Menu from "../Menu/Menu";
 import Form from "../Form/Form";
+import ListItems from "../ListItems/ListItems";
 import DataContext from "../../DataContext";
 
 export default class App extends Component {
@@ -15,11 +16,14 @@ export default class App extends Component {
         org: "sveltejs",
         repo: "template"
       },
+      displayedData: "sveltejs/template",
       openIssues: [],
       closedIssues: [],
       pullRequests: [],
-      handleChange: this.handleChange,
-      fetchData: this.fetchData
+      currentView: "openIssues",
+      handleTextInput: this.handleTextInput,
+      fetchData: this.fetchData,
+      handleNavClick: this.handleNavClick
     };
   }
   componentDidMount() {
@@ -74,6 +78,7 @@ export default class App extends Component {
                 createdAt
                 bodyText
                 number
+                title
               }
             }
           }
@@ -84,7 +89,8 @@ export default class App extends Component {
     api.post("", { query: fetchRepoData(org, repo) }).then(res => {
       this.sortIssues(res.data.data.organization.repository.issues.nodes);
       this.setState({
-        pullRequests: res.data.data.organization.repository.pullRequests.nodes
+        pullRequests: res.data.data.organization.repository.pullRequests.nodes,
+        displayedData: `${org}/${repo}`
       });
       console.log("REPO DATA:", res.data.data);
     });
@@ -95,15 +101,13 @@ export default class App extends Component {
     const closedIssues = [];
 
     issues.forEach(issue => {
-      issue.state === "OPEN"
-        ? openIssues.push(issue)
-        : closedIssues.push(issue);
+      issue.state === "OPEN" ? openIssues.push(issue) : closedIssues.push(issue);
     });
 
     this.setState({ openIssues, closedIssues });
   };
 
-  handleChange = e => {
+  handleTextInput = e => {
     const { inputValue } = { ...this.state };
     const inputValueCopy = inputValue;
     const { name, value } = e.target;
@@ -112,13 +116,18 @@ export default class App extends Component {
     this.setState({ inputValue: inputValueCopy });
   };
 
+  handleNavClick = e => {
+    this.setState({ currentView: e.target.id });
+  };
+
   render() {
     return (
       <DataContext.Provider value={this.state}>
         <div className="app-wrapper">
-          GRAPHQL GITHUB TRACKER
-          <Menu />
+          <h1>GRAPHQL GITHUB TRACKER</h1>
           <Form />
+          <Menu />
+          <ListItems />
         </div>
       </DataContext.Provider>
     );
