@@ -1,13 +1,10 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import DataContext from "../../DataContext";
 
 const Form = () => {
   const context = useContext(DataContext);
   const fetchData = context.fetchData;
   const handleTextInput = context.handleTextInput;
-  const token = context.inputValue.token;
-  const org = context.inputValue.org;
-  const repo = context.inputValue.repo;
 
   return (
     <div>
@@ -37,11 +34,7 @@ const Form = () => {
             onChange={e => handleTextInput(e)}
             name="repo"
           />
-          <button
-            className="pure-button pure-button-primary form-item"
-            onClick={e => fetchData(e)}
-            disabled={!token || !org || !repo ? true : false}
-          >
+          <button className="pure-button pure-button-primary form-item" onClick={e => fetchData(e)}>
             SUBMIT
           </button>
         </fieldset>

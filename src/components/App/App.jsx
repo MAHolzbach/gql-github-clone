@@ -21,9 +21,11 @@ export default class App extends Component {
       closedIssues: [],
       pullRequests: [],
       currentView: "openIssues",
+      commentsToRender: [],
       handleTextInput: this.handleTextInput,
       fetchData: this.fetchData,
-      handleNavClick: this.handleNavClick
+      handleNavClick: this.handleNavClick,
+      handleItemClick: this.handleItemClick
     };
   }
   componentDidMount() {
@@ -70,6 +72,7 @@ export default class App extends Component {
                 state
                 number
                 createdAt
+                id
               }
             }
             pullRequests(first: 10, orderBy: {field: CREATED_AT, direction: DESC}, states: OPEN) {
@@ -89,8 +92,12 @@ export default class App extends Component {
       `;
 
     api.post("", { query: fetchRepoData(org, repo) }).then(res => {
+      let allItems = res.data.data.organization.repository.issues.nodes.concat(
+        res.data.data.organization.repository.pullRequests.nodes
+      );
       this.sortIssues(res.data.data.organization.repository.issues.nodes);
       this.setState({
+        allItems,
         pullRequests: res.data.data.organization.repository.pullRequests.nodes,
         displayedData: `${org}/${repo}`
       });
@@ -120,6 +127,12 @@ export default class App extends Component {
 
   handleNavClick = e => {
     this.setState({ currentView: e.target.id });
+  };
+
+  handleItemClick = id => {
+    const { allItems } = this.state;
+    const commentsToRender = allItems.filter(item => item.id === id);
+    this.setState({ commentsToRender });
   };
 
   render() {
