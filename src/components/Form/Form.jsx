@@ -13,22 +13,32 @@ const Form = () => {
     <div>
       <form action="" className="pure-form search-form">
         <fieldset>
-          <legend>Search for a repo using your token and a repo name.</legend>
-          <input type="text" placeholder="Token" name="token" onChange={e => handleTextInput(e)} />
+          <legend>
+            Search for a repo using your token, an organization name, and a repo name.
+          </legend>
           <input
+            className="form-item"
+            type="text"
+            placeholder="Token"
+            name="token"
+            onChange={e => handleTextInput(e)}
+          />
+          <input
+            className="form-item"
             type="text"
             placeholder="Organization Name"
             onChange={e => handleTextInput(e)}
             name="org"
           />
           <input
+            className="form-item"
             type="text"
             placeholder="Repo Name"
             onChange={e => handleTextInput(e)}
             name="repo"
           />
           <button
-            className="pure-button pure-button-primary"
+            className="pure-button pure-button-primary form-item"
             onClick={e => fetchData(e)}
             disabled={!token || !org || !repo ? true : false}
           >

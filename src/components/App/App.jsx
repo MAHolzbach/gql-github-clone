@@ -68,6 +68,8 @@ export default class App extends Component {
                   }
                 }
                 state
+                number
+                createdAt
               }
             }
             pullRequests(first: 10, orderBy: {field: CREATED_AT, direction: DESC}, states: OPEN) {

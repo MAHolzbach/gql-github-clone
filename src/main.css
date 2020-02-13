@@ -1,2 +1,4 @@
 @import "./components/App/app.scss";
 @import "./components/Menu/menu.scss";
+@import "./components/Form/form.scss";
+@import "./components/Item/item.scss";
