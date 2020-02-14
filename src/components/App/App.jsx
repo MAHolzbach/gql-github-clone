@@ -25,7 +25,8 @@ export default class App extends Component {
       handleTextInput: this.handleTextInput,
       fetchData: this.fetchData,
       handleNavClick: this.handleNavClick,
-      handleItemClick: this.handleItemClick
+      handleItemClick: this.handleItemClick,
+      clearCommentsToRender: this.clearCommentsToRender
     };
   }
   componentDidMount() {
@@ -84,12 +85,21 @@ export default class App extends Component {
                 bodyText
                 number
                 title
+                id
+                comments(first: 20) {
+                  nodes {
+                    author {
+                      login
+                    }
+                    bodyText
+                  }
+                }
               }
             }
           }
         }
       }
-      `;
+    `;
 
     api.post("", { query: fetchRepoData(org, repo) }).then(res => {
       let allItems = res.data.data.organization.repository.issues.nodes.concat(
@@ -133,6 +143,10 @@ export default class App extends Component {
     const { allItems } = this.state;
     const commentsToRender = allItems.filter(item => item.id === id);
     this.setState({ commentsToRender });
+  };
+
+  clearCommentsToRender = () => {
+    this.setState({ commentsToRender: [] });
   };
 
   render() {

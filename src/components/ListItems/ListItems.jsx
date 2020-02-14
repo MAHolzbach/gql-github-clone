@@ -10,7 +10,8 @@ const ListItems = () => {
   const openIssues = context.openIssues;
   const closedIssues = context.closedIssues;
   const pullRequests = context.pullRequests;
-  const commentsToRender = context.commentsToRender;
+  const commentsToRender = context.commentsToRender[0];
+  const clearCommentsToRender = context.clearCommentsToRender;
   let itemsToRender;
   let viewTitle;
 
@@ -30,9 +31,9 @@ const ListItems = () => {
   }
 
   return (
-    <div>
+    <div className="list-wrapper">
       <h2>Current Organization and repo: {displayedData}</h2>
-      {commentsToRender.length === 0 ? (
+      {context.commentsToRender.length === 0 ? (
         <div>
           <h3>{viewTitle}</h3>
           {itemsToRender.map(item => (
@@ -41,10 +42,10 @@ const ListItems = () => {
         </div>
       ) : (
         <div>
-          <button className="pure-button pure-button-primary">GO BACK</button>
-          {commentsToRender[0].comments.nodes.map(item => (
-            <Comment comment={item} />
-          ))}{" "}
+          <button className="pure-button pure-button-primary" onClick={clearCommentsToRender}>
+            GO BACK
+          </button>
+          <Comment parentComment={commentsToRender} key={commentsToRender.id} />
         </div>
       )}
     </div>

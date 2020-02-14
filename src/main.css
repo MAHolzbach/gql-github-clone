@@ -2,3 +2,5 @@
 @import "./components/Menu/menu.scss";
 @import "./components/Form/form.scss";
 @import "./components/Item/item.scss";
+@import "./components/ListItems/list-items.scss";
+@import "./components/Comment/comment.scss";
