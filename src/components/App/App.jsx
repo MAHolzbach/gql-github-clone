@@ -5,6 +5,7 @@ import Menu from "../Menu/Menu";
 import Form from "../Form/Form";
 import ListItems from "../ListItems/ListItems";
 import DataContext from "../../DataContext";
+import Spinner from "../Spinner/Spinner";
 
 export default class App extends Component {
   constructor() {
@@ -22,6 +23,8 @@ export default class App extends Component {
       pullRequests: [],
       currentView: "openIssues",
       commentsToRender: [],
+      renderSpinner: null,
+      fetchError: false,
       handleTextInput: this.handleTextInput,
       fetchData: this.fetchData,
       handleNavClick: this.handleNavClick,
@@ -37,6 +40,8 @@ export default class App extends Component {
     if (e !== undefined) {
       e.preventDefault();
     }
+
+    this.setState({ renderSpinner: true, fetchError: false });
 
     const { token, org, repo } = this.state.inputValue;
 
@@ -62,7 +67,7 @@ export default class App extends Component {
                   login
                 }
                 bodyText
-                comments(first: 20) {
+                comments(first: 50) {
                   nodes {
                     author {
                       login
@@ -76,7 +81,7 @@ export default class App extends Component {
                 id
               }
             }
-            pullRequests(first: 10, orderBy: {field: CREATED_AT, direction: DESC}, states: OPEN) {
+            pullRequests(first: 100, orderBy: {field: CREATED_AT, direction: DESC}, states: OPEN) {
               nodes {
                 author {
                   login
@@ -101,18 +106,27 @@ export default class App extends Component {
       }
     `;
 
-    api.post("", { query: fetchRepoData(org, repo) }).then(res => {
-      let allItems = res.data.data.organization.repository.issues.nodes.concat(
-        res.data.data.organization.repository.pullRequests.nodes
-      );
-      this.sortIssues(res.data.data.organization.repository.issues.nodes);
-      this.setState({
-        allItems,
-        pullRequests: res.data.data.organization.repository.pullRequests.nodes,
-        displayedData: `${org}/${repo}`
+    api
+      .post("", { query: fetchRepoData(org, repo) })
+      .then(res => {
+        if (res.hasOwnProperty("errors")) {
+          this.setState({ fetchError: true });
+        }
+        let allItems = res.data.data.organization.repository.issues.nodes.concat(
+          res.data.data.organization.repository.pullRequests.nodes
+        );
+        this.sortIssues(res.data.data.organization.repository.issues.nodes);
+        this.setState({
+          allItems,
+          pullRequests: res.data.data.organization.repository.pullRequests.nodes,
+          displayedData: `${org}/${repo}`,
+          renderSpinner: false
+        });
+      })
+      .catch(error => {
+        console.error(error);
+        this.setState({ fetchError: true, renderSpinner: false });
       });
-      console.log("REPO DATA:", res.data.data);
-    });
   };
 
   sortIssues = issues => {
@@ -149,14 +163,31 @@ export default class App extends Component {
     this.setState({ commentsToRender: [] });
   };
 
+  renderContent = () => {
+    if (this.state.fetchError) {
+      return (
+        <h3 className="error">
+          Error. Possible solutions: Perhaps your token has a typo, or has the wrong permissions. Or
+          that organization or repo does not exist.
+        </h3>
+      );
+    }
+    if (this.state.renderSpinner) {
+      return <Spinner />;
+    }
+    return <ListItems />;
+  };
+
   render() {
     return (
       <DataContext.Provider value={this.state}>
         <div className="app-wrapper">
           <h1>GRAPHQL GITHUB TRACKER</h1>
-          <Form />
-          <Menu />
-          <ListItems />
+          <div>
+            <Form />
+            <Menu />
+            {this.renderContent()}
+          </div>
         </div>
       </DataContext.Provider>
     );

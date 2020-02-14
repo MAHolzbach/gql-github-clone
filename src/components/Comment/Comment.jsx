@@ -6,16 +6,12 @@ const Comment = ({ parentComment }) => {
   const clearCommentsToRender = context.clearCommentsToRender;
   const [filterInput, setFilterInput] = useState("");
   const [subComments, setSubComments] = useState(parentComment.comments.nodes);
-  console.log(subComments);
+
   const filterComments = e => {
     e.preventDefault();
-
     const filteredComments = parentComment.comments.nodes.filter(comment =>
       comment.bodyText.includes(filterInput)
     );
-
-    console.log(filteredComments);
-
     setSubComments(filteredComments);
   };
 
