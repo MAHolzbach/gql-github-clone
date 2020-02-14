@@ -136,7 +136,7 @@ export default class App extends Component {
   };
 
   handleNavClick = e => {
-    this.setState({ currentView: e.target.id });
+    this.setState({ currentView: e.target.id, commentsToRender: [] });
   };
 
   handleItemClick = id => {

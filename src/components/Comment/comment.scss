@@ -1,3 +1,8 @@
+.comment-controls {
+  display: flex;
+  justify-content: space-between;
+}
+
 .comment-wrapper,
 .response-wrapper {
   border-bottom: 1px solid black;

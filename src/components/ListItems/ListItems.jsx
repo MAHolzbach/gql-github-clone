@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import DataContext from "../../DataContext";
 import Item from "../Item/Item";
 import Comment from "../Comment/Comment";
@@ -11,7 +11,6 @@ const ListItems = () => {
   const closedIssues = context.closedIssues;
   const pullRequests = context.pullRequests;
   const commentsToRender = context.commentsToRender[0];
-  const clearCommentsToRender = context.clearCommentsToRender;
   let itemsToRender;
   let viewTitle;
 
@@ -42,9 +41,6 @@ const ListItems = () => {
         </div>
       ) : (
         <div>
-          <button className="pure-button pure-button-primary" onClick={clearCommentsToRender}>
-            GO BACK
-          </button>
           <Comment parentComment={commentsToRender} key={commentsToRender.id} />
         </div>
       )}
