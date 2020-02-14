@@ -33,6 +33,15 @@ const Comment = ({ parentComment }) => {
           <button className="pure-button pure-button-primary" onClick={e => filterComments(e)}>
             FILTER
           </button>
+          <button
+            className="pure-button"
+            onClick={e => {
+              e.preventDefault();
+              setSubComments(parentComment.comments.nodes);
+            }}
+          >
+            CLEAR
+          </button>
         </form>
       </div>
       <div className="comment-wrapper">
